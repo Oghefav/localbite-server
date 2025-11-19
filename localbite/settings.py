@@ -11,6 +11,10 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +29,7 @@ SECRET_KEY = 'django-insecure-77!s)z*k8ux8smt23o%@dhr9p(cxcj1i^5x%$6%5rgxw2c%j^j
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -43,6 +47,10 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     'authentication',
     'product',
+    'order',
+    'cart',
+    'payment',
+    'delivery',
 
 ]
 
@@ -84,6 +92,11 @@ DATABASES = {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
     }
+}
+REST_FRAMEWORK = {
+    'DEFAULT_PARSER_CLASSES': [
+        'rest_framework.parsers.JSONParser',
+    ]
 }
 
 
@@ -135,3 +148,6 @@ MEDIA_ROOT =  BASE_DIR / 'media'
 AUTH_USER_MODEL = 'user.CustomUser'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+PAYSTACK_SECRET_KEY = os.getenv("PAYSTACK_SECRET_KEY")
+# STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY")
+# WEBHOOK_SECRET= os.getenv("WEBHOOK_SECRET")

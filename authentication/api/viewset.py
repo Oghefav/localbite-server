@@ -6,9 +6,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import AllowAny 
 from rest_framework.authtoken.models import Token
 from user.models import Chef, CustomUser, Driver, Customer
-from rest_framework.parsers import MultiPartParser
+from user.api.serializers import ChefSerializer, DriverSerializer, CustomerSerializer
+from rest_framework.parsers import MultiPartParser, JSONParser
 from rest_framework.views import APIView
 from authentication.api.serializers import CustomerRegisterSerializer, ChefRegisterSerializer, DriverRegisterSerializer, LoginSerializer, ResetPasswordSerializer
+from cart.models import Cart
 
 class CustomerRegistrationViewset(viewsets.ModelViewSet):
     http_method_names = ['post',]
@@ -26,7 +28,9 @@ class CustomerRegistrationViewset(viewsets.ModelViewSet):
         else:
             serializer.save()
             user = CustomUser.objects.get(email = email)
+            
             token = Token.objects.create(user=user)
+            
             return Response({'message' : 'registration is successfull', 'token' : token.key, 'data' : serializer.data}, status=status.HTTP_201_CREATED) 
 
 
@@ -34,7 +38,7 @@ class ChefRegistrationViewSet(viewsets.ModelViewSet):
     http_method_names = ['post',]
     serializer_class = ChefRegisterSerializer
     permission_classes = [AllowAny]
-    parser_classes = [MultiPartParser]
+    parser_classes = [MultiPartParser, JSONParser]
 
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -88,7 +92,7 @@ class loginViewSet(viewsets.ViewSet):
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
 
-        user = authenticate(request, password = password, email=email)
+        user = authenticate(request, username=email, password=password)
         if user is None:
             return Response({'message' : 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
         formal_token = Token.objects.filter(user=user)
@@ -97,14 +101,25 @@ class loginViewSet(viewsets.ViewSet):
 
         if Chef.objects.filter(user=user).exists():
             user_type = 'chef'
+            chef = Chef.objects.get(user=user)
+            user_serializer = ChefSerializer(chef)
+
         elif Driver.objects.filter(user=user).exists():
             user_type = 'driver'
+            driver = Driver.objects.get(user=user)
+            user_serializer = DriverSerializer(driver)
+
         elif Customer.objects.filter(user=user).exists():
             user_type = 'customer'
+            customer = Customer.objects.get(user=user)
+            cart_code = Cart.objects.get(customer=customer).cart_code
+            user_serializer = CustomerSerializer(customer)
+            return Response({'message' : 'login successful','user_type' : user_type ,'token' : new_token.key, 'cart_code': cart_code,'data' : user_serializer.data}, status=status.HTTP_200_OK)
         else:
             user_type = 'admin'
+
         
-        return Response({'message' : 'login successful','user_type' : user_type ,'token' : new_token.key, 'data' : serializer.data}, status=status.HTTP_200_OK)
+        return Response({'message' : 'login successful','user_type' : user_type ,'token' : new_token.key, 'data' : user_serializer.data}, status=status.HTTP_200_OK)
 
 
 class ResetPassword(viewsets.ViewSet):

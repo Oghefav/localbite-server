@@ -1,21 +1,31 @@
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
 from django.contrib.auth.password_validation import validate_password as django_password_validator
+from cart.models import Cart
 from user.models import Customer, Chef, Driver, CustomUser
 from user.api.serializers import CustomUserSerializer
 
 
 class CustomerRegisterSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()
+    cart_code = serializers.SerializerMethodField(read_only = True)
     class Meta:
         model = Customer
-        fields = ['user' , 'address']
+        fields = ['user' , 'address', 'cart_code']
 
     def create(self, validated_data):
-        user = validated_data.pop('user')
-        user.pop('confirm_password')
-        user = CustomUser.objects.create_user(**user)
-        return Customer.objects.create(user=user, address=validated_data['address'])
+        user_data = validated_data.pop('user')
+        user_data.pop('confirm_password')
+        user = CustomUser(**user_data)
+        user.set_password(user_data['password']) 
+        user.save()
+        customer = Customer.objects.create(user=user, address=validated_data['address'])
+        cart, created = Cart.objects.get_or_create(customer=customer)
+        return customer
+    
+    def get_cart_code(self, obj):
+        cart = Cart.objects.get(customer=obj)
+        return cart.cart_code
     
 class ChefRegisterSerializer(serializers.ModelSerializer):
     confirm_password = serializers.CharField(write_only=True, required=True)

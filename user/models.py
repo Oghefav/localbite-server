@@ -65,10 +65,14 @@ class CustomUser(AbstractUser):
 
 class Chef(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='chef', primary_key=True)
-    bio = models.TextField()
+    bio = models.TextField(null=True, blank= True)
     brand_image = models.ImageField(upload_to='brand_img', blank=True, null=True)
     brand_name = models.CharField(unique=True,max_length=50, null=True, blank=True)
     address = models.CharField(max_length=250, null=True, blank=True)
+    account_number = models.BigIntegerField(null=True)
+    account_name = models.CharField(max_length=150, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
     def __str__(self):
         return self.brand_name
@@ -77,13 +81,19 @@ class Chef(models.Model):
 class Driver(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, related_name='driver', primary_key=True)
     license_number = models.CharField(max_length=10, unique=True, validators=[validate_license_number])
-
+    account_number = models.BigIntegerField(null=True)
+    account_name = models.CharField(max_length=150, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    is_available = models.BooleanField(default=True, null=True)
     def __str__(self):
         return f"{self.user.first_name} {self.license_number}"
 
 class Customer(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE, primary_key=True, related_name='customer')
     address = models.CharField(max_length=250, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name}"

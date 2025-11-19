@@ -26,6 +26,10 @@ urlpatterns = [
     path('user/', include('user.api.router')),
     path('auth/', include('authentication.api.routers')),
     path('meal/', include('product.api.router')),
+    path('cart/', include('cart.api.router')),
+    path('payment/', include('payment.urls')),
+    path('order/', include('order.api.routers')),
+    path('delivery/', include('delivery.api.routers')),
 ]
 
 if settings.DEBUG == True:

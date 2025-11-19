@@ -28,17 +28,17 @@ class CustomerSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     class Meta:
         model = Customer
-        fields = ['user', 'address']
+        fields = ['user', 'address', ]
 
 class DriverSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer(read_only=True)
     class Meta: 
         model = Driver
-        fields = ['user', 'license_number']
+        fields = ['user', 'license_number', 'account_number', 'account_name']
 
 class ChefSerializer(serializers.ModelSerializer):
     user = CustomUserSerializer()
 
     class Meta:
         model = Chef
-        fields = ['brand_name', 'brand_name', 'brand_image', 'bio', 'address', 'user']
+        fields = ['brand_name', 'brand_name', 'brand_image', 'bio', 'address', 'user', 'account_number', 'account_name']
